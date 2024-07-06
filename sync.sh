@@ -1,3 +1,4 @@
 #/bin/bash
+cd /home/trixie/pissshit.com/
 git pull -q
-cp /home/trixie/pissshit.com/PUBLIC_HTML/* /var/www/pissshit.com/html
+cp PUBLIC_HTML/* /var/www/pissshit.com/html
