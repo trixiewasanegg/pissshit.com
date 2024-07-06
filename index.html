@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Baskervville+SC&family=Pacifico&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 <style>
 .sig {
-    font-family: "Pacifico", cursive;
+    font-family: "Pacifico", cursive !important;
     font-weight: 400;
     font-style: normal;
     font-size: 2em;
@@ -20,10 +20,16 @@
     font-style: normal;
     text-align: center;
 }
+h1 {
+    font-size: 5em;
+}
+h2 {
+    font-size: 2em;
+}
 .plink {
 	color: lightblue;
 }
-.container > div > p {
+.column > p {
     font-family: "Roboto", sans-serif;
     font-weight: 400;
     font-style: normal;
@@ -31,7 +37,7 @@
     font-size: 1em;
 }
 
-.container {
+.bodyContainer {
     display: grid;
     grid-template-columns: 40% 60%;
     gap: 10px;
@@ -39,11 +45,18 @@
     align-items: center;
     background-color: #420420;
 }
+.titleContainer{
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: 10px;
+    padding: 10px;
+    align-items: center;
+}
 .picrew {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    height: 60%;
+    max-width: 100%;
 }
 .footer {
     text-align: center;
@@ -54,18 +67,20 @@
 <div class="title">
     <h1>pissshit.com</h1>
 </div>
+<div class="titleContainer">
 <div class="title">
     <h2>What?</h2>
 </div>
 <div class="title">
     <h2><i>W<sup>h</sup>y<sup>y</sup>y<sub>y</sub>yy<sub>y</sub><sup>y</sup>y<sup>y</sup>?</i></h2>
 </div>
-<div class="container">
-<div class="trixieFace">
+</div>
+<div class="bodyContainer">
+<div class="column">
     <img src="picrew.png" alt="Trixie's Face" class="picrew">
     <p><i>This image was created with Picrew <u>Character maker.</u> <a class="plink" href="https://picrew.me/share?cd=oY9zFx0MrU">Check it out here</a></i></p>
 </div>
-<div class="text">
+<div class="column">
     <p>I don't know why you're here</p>
     <p>I bought this domain while bored in VC with my friends</p>
     <p>I was gonna put a contact me section here, but that seems like a really bad idea for <em>this</em> site.</p>
