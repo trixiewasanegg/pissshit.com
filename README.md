@@ -24,3 +24,4 @@ Nil - relatively raw HTML
 - Some form of blog system, built around markdown
 - Overall design improvements
 	- More shit like maia.crimew.gay, she fucks
+- Update nginx config in prod to include cache miss
