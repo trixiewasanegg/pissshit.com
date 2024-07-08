@@ -7,12 +7,14 @@ import pytz
 # Loads environment file
 load_dotenv()
 token = os.getenv('TOKEN')
-channelID = int(os.getenv('CHANNEL'))
-markdownLocation = os.getenv('MARKDOWNPATH') + "\messages.md"
+pathDelim = os.getenv('PATHDELIM')
+microChannelID = int(os.getenv('CHANNEL'))
+microMD = str(os.getenv('MDPATH')) + pathDelim + "microMessages.md"
 
 handler = logging.FileHandler(filename='DiscordBot.log', encoding='utf-8', mode='w')
 
-async def microblogUpdate(channel):
+async def messageUpdate(self):
+	channel = self.get_channel(microChannelID,)
 	markdownLines = []
 	async for message in channel.history(limit=100):
 		# Gets datetime datestamp of message, converts to datestamp:\
@@ -40,7 +42,7 @@ async def microblogUpdate(channel):
 		markdownLines.append(context)
 		markdownLines.append(content + "\n")
 		markdownLines.append("---")
-	file = open(markdownLocation,"w")
+	file = open(microMD,"w")
 	for lin in markdownLines:
 		file.write(lin + "\n")
 	file.close()
@@ -49,17 +51,14 @@ async def microblogUpdate(channel):
 class MyClient(discord.Client):
 	async def on_ready(self):
 		print(f'Logged on as {self.user}!')
-		channel = self.get_channel(channelID,)
-		await microblogUpdate(channel)		
+		await messageUpdate(self)		
 
 	# When message sent, 
 	async def on_message(self, msg):
-		channel = self.get_channel(channelID,)
-		await microblogUpdate(channel)		
+		await messageUpdate(self)		
 	
 	async def on_raw_message_delete(self, msg):
-		channel = self.get_channel(channelID,)
-		await microblogUpdate(channel)		
+		await messageUpdate(self)		
 
 
 intents = discord.Intents.default()

@@ -1,3 +1,4 @@
 *.env
 *.log
-messages.md
+*essages.md
+*.sql
