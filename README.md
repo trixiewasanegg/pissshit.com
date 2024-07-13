@@ -7,7 +7,7 @@ Nil - relatively raw HTML
 
 ### Discord Bot
 - discord.py
-- python dotenv
+- python_dotenv
 - pytz
 - datetime
 

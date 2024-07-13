@@ -1,4 +1,5 @@
 *.env
+.venv/
 *.log
-*essages.md
+PUBLIC_HTML/*.md
 *.sql
