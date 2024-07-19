@@ -14,6 +14,7 @@ microChannelID = int(os.getenv('MICROCHANNEL'))
 microMD = str(os.getenv('MDPATH')) + pathDelim + "microMessages.md"
 blogChannelID = int(os.getenv('BLOGCHANNEL'))
 blogMD = str(os.getenv('MDPATH')) + pathDelim + "blogMessages.md"
+postsDir = str(os.getenv('POSTDIR'))
 aboutChannelID = int(os.getenv('ABOUTCHANNEL'))
 aboutMD = str(os.getenv('MDPATH')) + pathDelim + "about.md"
 
@@ -29,18 +30,12 @@ async def messageUpdate(self):
 	for channel in channels:
 		channelData = self.get_channel(channel[0],)
 		markdownLines = []
-		usrIDs = []
-		members = channelData.guild.members
-		memberIDs = []
-		i = 0
-		while i < len(members)+1:
-			print(i)
-			memberIDs.append(members[i].id)
-			i = i+1
+
+		# Adds a bit of boilerplate for the about me update
 		if channel[2] == "AB":
-			markdownLines.append("# Current users of "+channelData.guild.name)
-			markdownLines.append("## Total Members: "+channelData.guild.member_count)
-			markdownLines.append("<br /><br />")
+			markdownLines.append("# Current contributors of "+channelData.guild.name)
+			markdownLines.append("<br />")
+			markdownLines.append('<table style="width:100%">')
 		async for message in channelData.history(limit=100):
 			# Gets datetime datestamp of message, converts to datestamp:
 			date = message.created_at
@@ -51,8 +46,8 @@ async def messageUpdate(self):
 			author = message.author.display_name
 			avatar = message.author.avatar.url
 			content = message.clean_content
-			embed = message.embeds
-
+			attached = message.attachments
+			embeds = message.embeds
 			# Checks channel type & splits off from there
 			if channel[2] == "MB":
 				# Checks if reply, gets replied message details
@@ -65,17 +60,37 @@ async def messageUpdate(self):
 				else:
 					context = "\n_wrote at " + datestamp + "_<br />"
 
+				# Appends markdown file with the content & context
 				markdownLines.append("### " + author + "\n")
 				markdownLines.append(context)
 				markdownLines.append(content + "\n")
+				for attachment in attached:
+					if attachment.content_type.split("/")[0] == "image":
+						markdownLines.append('<img src="'+attachment.url+'"><br />')
+					if attachment.content_type.split("/")[0] == "video":
+						markdownLines.append('<video controls> <source src="'+attachment.url+'" type='+attachment.content_type+'> Your browser does not support the video tag. </video><br />')
+				for embed in embeds:
+					if embed.type == "video" or embed.type == "gifv":
+						markdownLines.append('<video controls> <source src="'+embed.url+'"> Your browser does not support the video tag. </video><br />')
 				markdownLines.append("---")
+
+			# Builds tables for about section
 			elif channel[2] == "AB":
-				markdownLines.append("###")
+				markdownLines.append("<tr>")
+				markdownLines.append('<td style="width:30%"><img src="'+avatar+'" max-width="400" alt="'+author+' display image"></td>')
+				markdownLines.append('<td style="width:70%"><h3>' + author + '</h3><br />'+content+'</td>')
+				markdownLines.append("</tr>")
+		
+		# Adds a bit of boilerplate for the about update
+		if channel[2] == "AB":
+			markdownLines.append("</table>")
+		
+		# Opens the file, writes the markdown
 		file = open(channel[1],"w")
 		for lin in markdownLines:
 			file.write(lin + "\n")
 		file.close()
-	print("Messages Updated")	
+	print("Messages Updated")
 
 class MyClient(discord.Client):
 	async def on_ready(self):
@@ -87,11 +102,15 @@ class MyClient(discord.Client):
 		await messageUpdate(self)		
 	
 	async def on_raw_message_delete(self, msg):
-		await messageUpdate(self)		
+		await messageUpdate(self)
+
+	async def on_member_update(self,before,after):
+		await messageUpdate(self)
 
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 
 client = MyClient(intents=intents)
 client.run(token, log_handler=handler)
