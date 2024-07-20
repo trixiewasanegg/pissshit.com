@@ -2,6 +2,7 @@ import logging
 import discord
 from dotenv import load_dotenv
 import os
+import shutil
 import pytz
 
 # Loads environment file
@@ -44,9 +45,11 @@ async def messageUpdate(self):
 
 		# Adds a bit of boilerplate for the about me update
 		if channel[2] == "AB":
-			markdownLines.append(f"# Current contributors of{channelData.guild.name}")
+			markdownLines.append(f"# Current contributors of {channelData.guild.name}")
 			markdownLines.append("<br />")
 			markdownLines.append('<table style="width:100%">')
+		elif channel[2] == "BL":
+			slugs = []
 		async for message in channelData.history(limit=100):
 			# Gets datetime datestamp of message, converts to datestamp:
 			date = message.created_at
@@ -99,12 +102,22 @@ async def messageUpdate(self):
 					pair = line.split(": ")
 					key.append(pair[0])
 					value.append(pair[1])
+				try:
+					title = value[key.index("Title")]
+					slug = value[key.index("Slug")]
+					publishDate = value[key.index("Published")]
+				except:
+					await logToChannel(self, message, "Key not found. Ensure message includes Title, Slug, and Published separated by ': ' only.")
+				
+				path = f'{postsDir}{pathDelim}{slug}'
+				if not os.path.exists(path):
+					os.makedirs(path)
+
 				for attachment in attached:
 					if attachment.content_type.split("/")[0] != "text":
-						await logToChannel(self, message, "Invalid attachment for blog")
-
-
-		
+						await logToChannel(self, message, "Invalid attachment for blog - must be text")
+					if attachment.content_type.split("; ")[0].split("/")[1] != "markdown":
+						print("non-markdown")
 		# Adds a bit of boilerplate for the about update
 		if channel[2] == "AB":
 			markdownLines.append("</table>")
