@@ -146,41 +146,41 @@ async def blogUpdate(self):
 
 	
 
-async def updateAll(self):
-	await microblogUpdate(self)
-	await aboutUpdate(self)
-	await blogUpdate(self)
+async def update(self,msg=0):
+	updated = 0
+	if msg == 0:
+		await microblogUpdate(self)
+		updated = updated + 1
+		await aboutUpdate(self)	
+		updated = updated + 1
+		await blogUpdate(self)
+		updated = updated + 1
+	elif channeltypes[channels.index(msg.channel.id)] == "MB":
+		await microblogUpdate(self)
+		updated = updated + 1
+	elif channeltypes[channels.index(msg.channel.id)] == "AB":
+		await aboutUpdate(self)	
+		updated = updated + 1
+	elif channeltypes[channels.index(msg.channel.id)] == "BL":
+		await blogUpdate(self)
+		updated = updated + 1
+	print(f'Updated {updated} channels')
 
 class MyClient(discord.Client):
 	async def on_ready(self):
 		print(f'Logged on as {self.user}!')
 		print(f"Bot ID {self.user.id}")
-		await updateAll(self)
+		await update(self)
 
-	# When message sent, 
 	async def on_message(self, msg):
 		if msg.author.id != self.user.id:
-			try:
-				channelType = channeltypes[channels.index(msg.channel.id)]
-				if channelType == "MB":
-					await microblogUpdate(self)
-				elif channelType == "AB":
-					await aboutUpdate(self)
-			except:
-				print(f'{msg.channel.id} not monitored')
+			await update(self, msg)
 		
 	async def on_raw_message_delete(self, msg):
-		try:
-			channelType = channeltypes[channels.index(msg.channel.id)]
-			if channelType == "MB":
-				await microblogUpdate(self)
-			elif channelType == "AB":
-				await aboutUpdate(self)
-		except:
-			print(f'{msg.channel.id} not monitored')
+		await update(self,msg)
 
 	async def on_member_update(self,before,after):
-		await updateAll(self)
+		await update(self)
 
 
 intents = discord.Intents.default()
