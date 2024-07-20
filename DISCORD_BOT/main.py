@@ -17,14 +17,25 @@ blogMD = str(os.getenv('MDPATH')) + pathDelim + "blogMessages.md"
 postsDir = str(os.getenv('POSTDIR'))
 aboutChannelID = int(os.getenv('ABOUTCHANNEL'))
 aboutMD = str(os.getenv('MDPATH')) + pathDelim + "about.md"
+logChannelID = int(os.getenv('LOGCHANNEL'))
 
 # Three Channel Types:
 # MB - Microblogging
 # BL - Blogging
 # AB - About
 channels = [(microChannelID,microMD,'MB'), (blogChannelID,blogMD,'BL'), (aboutChannelID,aboutMD,'AB')]
+ignoredChannels = [logChannelID]
 
 handler = logging.FileHandler(filename='DiscordBot.log', encoding='utf-8', mode='w')
+
+async def logToChannel(self, trigger, text):
+	logChannel = self.get_channel(logChannelID,)
+	guildID = str(trigger.guild.id)
+	channelID = str(trigger.channel.id)
+	messageID = str(trigger.id)
+	author = str(trigger.author.id)
+	message = f"Re: https://discord.com/channels/{guildID}/{channelID}/{messageID}\n <@{author}> - This message has returned an error:\n{str(text)}"
+	await logChannel.send(message)
 
 async def messageUpdate(self):
 	for channel in channels:
@@ -33,7 +44,7 @@ async def messageUpdate(self):
 
 		# Adds a bit of boilerplate for the about me update
 		if channel[2] == "AB":
-			markdownLines.append("# Current contributors of "+channelData.guild.name)
+			markdownLines.append(f"# Current contributors of{channelData.guild.name}")
 			markdownLines.append("<br />")
 			markdownLines.append('<table style="width:100%">')
 		async for message in channelData.history(limit=100):
@@ -66,20 +77,33 @@ async def messageUpdate(self):
 				markdownLines.append(content + "\n")
 				for attachment in attached:
 					if attachment.content_type.split("/")[0] == "image":
-						markdownLines.append('<img src="'+attachment.url+'"><br />')
+						markdownLines.append(f'<img src="{attachment.url}"><br />')
 					if attachment.content_type.split("/")[0] == "video":
-						markdownLines.append('<video controls> <source src="'+attachment.url+'" type='+attachment.content_type+'> Your browser does not support the video tag. </video><br />')
+						markdownLines.append(f'<video controls> <source src="{attachment.url}" type={attachment.content_type}> Your browser does not support the video tag. </video><br />')
 				for embed in embeds:
 					if embed.type == "video" or embed.type == "gifv":
-						markdownLines.append('<video controls> <source src="'+embed.url+'"> Your browser does not support the video tag. </video><br />')
+						markdownLines.append(f'<video controls> <source src="{embed.url}"> Your browser does not support the video tag. </video><br />')
 				markdownLines.append("---")
 
 			# Builds tables for about section
 			elif channel[2] == "AB":
 				markdownLines.append("<tr>")
-				markdownLines.append('<td style="width:30%"><img src="'+avatar+'" max-width="400" alt="'+author+' display image"></td>')
-				markdownLines.append('<td style="width:70%"><h3>' + author + '</h3><br />'+content+'</td>')
+				markdownLines.append(f'<td style="width:30%"><img src="{avatar}" max-width="400" alt="{author}display image"></td>')
+				markdownLines.append(f'<td style="width:70%"><h3>{author}</h3><br />{content}</td>')
 				markdownLines.append("</tr>")
+
+			elif channel[2] == "BL":
+				key = []
+				value = []
+				for line in content.split("\n"):
+					pair = line.split(": ")
+					key.append(pair[0])
+					value.append(pair[1])
+				for attachment in attached:
+					if attachment.content_type.split("/")[0] != "text":
+						await logToChannel(self, message, "Invalid attachment for blog")
+
+
 		
 		# Adds a bit of boilerplate for the about update
 		if channel[2] == "AB":
@@ -95,11 +119,13 @@ async def messageUpdate(self):
 class MyClient(discord.Client):
 	async def on_ready(self):
 		print(f'Logged on as {self.user}!')
+		print(f"Bot ID {self.user.id}")
 		await messageUpdate(self)		
 
 	# When message sent, 
 	async def on_message(self, msg):
-		await messageUpdate(self)		
+		if msg.author.id != self.user.id:
+			await messageUpdate(self)		
 	
 	async def on_raw_message_delete(self, msg):
 		await messageUpdate(self)
