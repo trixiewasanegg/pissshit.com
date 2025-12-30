@@ -116,3 +116,10 @@ a {
     font-family: "Baskervville SC", cursive !important;
     font-weight: 600;
 }
+
+.subtitle2 {
+    font-family: "Baskervville SC", cursive !important;
+    text-align: center;
+    font-style: italic;
+    margin-top: .5em;
+}
